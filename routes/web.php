@@ -14,3 +14,4 @@
 Route::get('/', function () {
     return view('welcome');
 });
+$router->get('/login','User\UserController@key');
