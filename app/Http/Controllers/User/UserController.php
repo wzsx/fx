@@ -20,7 +20,7 @@ class UserController extends Controller{
             ];
             die(json_encode($response,JSON_UNESCAPED_UNICODE));
         }
-        $res=UserModel::where(['name'=>$name])->first();
+        $res=UserModel::where(['u_name'=>$name])->first();
         if($res){
             $response=[
                 'errno'=>50004,
@@ -40,7 +40,7 @@ class UserController extends Controller{
         $k=openssl_get_privatekey('file://key/priv.key');
         openssl_private_encrypt($json_str,$enc_data,$k);
         var_dump($enc_data);
-        $api_url='http://fx.com/public';
+        $api_url='http://cl.com/pub';
         $ch=curl_init();
         curl_setopt($ch,CURLOPT_URL,$api_url);
         curl_setopt($ch,CURLOPT_POST,1);
@@ -69,13 +69,43 @@ class UserController extends Controller{
                 'errno'=>50003,
                 'msg'=>'注册用户失败'
             ];
+
         }
-        return json_decode($response,JSON_UNESCAPED_UNICODE);
+        return json_encode($response,JSON_UNESCAPED_UNICODE);
     }
 public function login(Request $request){
     $name=$request->input('name');
     $pass=$request->input('pass');
-    $res=UserModel::where(['name'=>$name])->first();
+    $data=[
+        'name' =>$name,
+        'pass'  =>$pass
+    ];
+    //对称加密数据
+    $method ='AES-256-CBC';
+    $key='yufsfs';
+    //$option= OPENSSL_RAW_DATA;
+    $iv ='1234567890asdfgh';
+    $dd=json_encode($data);
+    $send_data=base64_encode(openssl_encrypt($dd,$method,$key,OPENSSL_RAW_DATA,$iv));
+    echo $send_data;echo '<hr>';
+    $api_url='http://cl.com/duic';
+    $ch=curl_init();
+    curl_setopt($ch,CURLOPT_URL,$api_url);
+    curl_setopt($ch,CURLOPT_POST,1);
+    curl_setopt($ch,CURLOPT_POSTFIELDS,$send_data);
+    curl_setopt($ch,CURLOPT_HTTPHEADER,[
+        'Content-type:text/plain'
+    ]);
+    $response=curl_exec($ch);
+    var_dump($response);
+    //监控错误码
+    $err_code=curl_errno($ch);
+    //var_dump($err_code);
+    if($err_code>0){
+        echo "CURL 错误码：".$err_code;exit;
+    }
+    curl_close($ch);
+    $res=UserModel::where(['u_name'=>$name])->first();
     if($res){      //用户存在
         if(password_verify($pass,$res->u_pass)){  //验证密码
             //TODO 登录逻辑

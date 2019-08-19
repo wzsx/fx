@@ -14,4 +14,7 @@
 Route::get('/', function () {
     return view('welcome');
 });
-$router->get('/login','User\UserController@key');
+$router->get('/key','User\UserController@key');
+$router->post('/reg','User\UserController@reg');
+$router->post('/login','User\UserController@login');
+$router->post('/pub','Pub\PubController@pub');
